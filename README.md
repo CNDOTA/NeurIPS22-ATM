@@ -6,4 +6,4 @@ To run experiments on SMAC, use command like "python src/main.py --config=qmix -
 
 To run experiments on LBF, use command like "python3 src/main.py --config=maa2c --env-config=gymma with env_args.key="lbforaging:Foraging-7s-15x15-3p-5f-v2" t_max=5000000 > out_lbf_15x15_3p5f_atm_maa2c_1.log 2>&1 &".
 
-Note that, on LBF, the parameter "num_foods" in src/config/default.yaml should correspond with each scenario such as "5f" means "num_foods" is 5.
+Note that, on LBF, the parameter "num_foods" in src/config/default.yaml should correspond with each scenario. For example, "5f" means "num_foods" is 5.

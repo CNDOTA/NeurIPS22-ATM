@@ -53,13 +53,9 @@ class MemoryAgent(nn.Module):
         self.qkv_layernorm = nn.LayerNorm([self.num_units + self.mem_slots, self.total_qkv_size])
 
         # used for attend_over_memory function
-        # self.fc3 = nn.Linear(self.mem_size, self.mem_size)
         self.fc_mlp = nn.Linear(self.mem_size, self.mem_size)
         self.mlp_memory_layernorm = nn.LayerNorm([self.num_units + self.mem_slots, self.mem_size])
         self.att_memory_layernorm = nn.LayerNorm([self.num_units + self.mem_slots, self.mem_size])
-
-        # self.mem_decoder_layer = nn.Linear(self.mem_size * self.mem_slots + args.n_actions, 1)
-        # self.mem_decoder_layer2 = nn.Linear(input_shape, 1)
 
     def init_hidden(self):
         init_state = torch.eye(self.mem_slots, device=self.args.device)

@@ -43,8 +43,6 @@ class MemoryAgent(nn.Module):
         self.mem_emb_layer = nn.Linear(self.mem_size + self.args.mem_slots, self.mem_size)  # add memory age/id
         self.h_layer = nn.Linear(self.mem_size, self.mem_size)
 
-        # self.fc1 = nn.Linear(input_shape, self.mem_size)
-
         self.q_token = nn.Linear(self.mem_size, self.args.action_tensors)
 
         # each head has q * k * v linear projector, just using one big param is more efficient
@@ -52,7 +50,6 @@ class MemoryAgent(nn.Module):
         self.qkv_layernorm = nn.LayerNorm([self.num_units + self.mem_slots, self.total_qkv_size])
 
         # used for attend_over_memory function
-        # self.fc3 = nn.Linear(self.mem_size, self.mem_size)
         self.fc_mlp = nn.Linear(self.mem_size, self.mem_size)
         self.mlp_memory_layernorm = nn.LayerNorm([self.num_units + self.mem_slots, self.mem_size])
         self.att_memory_layernorm = nn.LayerNorm([self.num_units + self.mem_slots, self.mem_size])
@@ -102,11 +99,9 @@ class MemoryAgent(nn.Module):
         attended_memory = self.multihead_attention(memory)
         # Add a skip connection to the multihead attention memory.
         memory = self.att_memory_layernorm(memory + attended_memory)
-        # memory = (memory + attended_memory) / 2
         # add a skip connection to the mlp memory.
         mlp_memory = F.relu(self.fc_mlp(memory))
         memory = self.mlp_memory_layernorm(memory + mlp_memory)
-        # memory = (memory + mlp_memory) / 2
         return memory
 
     def forward(self, inputs, memory):
@@ -143,13 +138,11 @@ class MemoryAgent(nn.Module):
 
         h = t_out[:, :self.args.n_actions, :].mean(dim=1, keepdim=True)  # (batch_size * n_agents, 1, mem_size)
 
-        # h = self.attend_over_memory(memory_plus_factor)[:, :1, :]  # (batch_size * n_agents, 1, mem_size)
         h_mem = torch.tanh(self.h_layer(h))
         next_memory = torch.cat([h_mem, memory[:, :-1, :]], dim=1)  # (batch_size * n_agents, mem_slot, mem_size)
 
         q_tokens = t_out[:, :self.args.n_actions, :]  # (bs*n_agents, n_actions, mem_size)
         q = self.q_token(q_tokens).mean(dim=2)  # (bs*n_agents, n_actions, n_tensors) => (bs*n_agents, n_actions)
 
-        # q = self.fc2(h)  # (batch_size * n_agents, n_actions)
         return q, next_memory
 
